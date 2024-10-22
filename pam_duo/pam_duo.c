@@ -238,6 +238,23 @@ pam_sm_authenticate(pam_handle_t *pamh, int pam_flags,
         }
     }
 
+    /* Start of new Mike code for mapping local username to BSU username */
+    FILE *fp = fopen("/root/usermap.txt","r");
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    if (fp == NULL)
+        return -1;  //(PAM_SERVICE_ERR);
+    while ((read = getline(&line, &len, fp)) != -1) {
+        char *b = strtok(line, " ");
+        if (b != NULL) {
+            if (strcmp(b,user) == 0) {
+                user = strtok(NULL," \n");
+                break;
+            }
+        }
+    }
+
     /* Grab the remote host */
     ip = NULL;
     pam_get_item(pamh, PAM_RHOST,
