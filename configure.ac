@@ -1,13 +1,15 @@
 #
-# Copyright 2013 Duo Security
-# All rights reserved, all wrongs reversed
+# SPDX-License-Identifier: GPL-2.0-with-classpath-exception
+#
+# Copyright (c) 2023 Cisco Systems, Inc. and/or its affiliates
+# All rights reserved.
 
 # Minimum autoconf version
 AC_PREREQ(2.65)
 
 # Package, version, bug report address
 AC_INIT([duo_unix],
-	[1.12.1],
+	[2.0.3],
 	[support@duosecurity.com])
 
 # Tells autoconf where to find necessary build scripts and macros.
@@ -60,7 +62,8 @@ case "$host_os" in
         ;;
     *aix*)
         AC_MSG_NOTICE([-fstack-protector disabled on AIX])
-        CFLAGS="$CFLAGS -Wl,-lm"
+        AC_MSG_NOTICE([Compiler optimizations disabled on AIX])
+        CFLAGS="$CFLAGS -O0 -Wl,-lm"
         has_stack_protector=no
         IS_AIX=yes
         ;;

@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
+#
+# SPDX-License-Identifier: GPL-2.0-with-classpath-exception
+#
+# Copyright (c) 2023 Cisco Systems, Inc. and/or its affiliates
+# All rights reserved.
+#
+# mockduo.py
+#
 
 import cgi
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 try:
-    from hashlib import sha1
+    from hashlib import sha512
 except ImportError:
-    import sha as sha1
+    import sha as sha512
 
 import base64
 import hmac
@@ -67,7 +75,7 @@ class MockDuoHandler(BaseHTTPRequestHandler):
                 )
             )
         canon.append("&".join(l))
-        h = hmac.new(SKEY, ("\n".join(canon)).encode("utf8"), digestmod="sha1")
+        h = hmac.new(SKEY, ("\n".join(canon)).encode("utf8"), digestmod="sha512")
 
         return sig == h.hexdigest()
 
@@ -256,10 +264,12 @@ class MockDuoHandler(BaseHTTPRequestHandler):
 
         return self._send(200, buf)
 
+class HTTPServerV6(HTTPServer):
+    address_family = socket.AF_INET6
 
 def main():
     port = 4443
-    host = "localhost"
+    host = "::"
     if len(sys.argv) == 1:
         cafile = os.path.realpath(
             "{0}/certs/mockduo.pem".format(os.path.dirname(__file__))
@@ -270,7 +280,7 @@ def main():
         print("Usage: {0} [certfile]\n".format(sys.argv[0]), file=sys.stderr)
         sys.exit(1)
 
-    httpd = HTTPServer((host, port), MockDuoHandler)
+    httpd = HTTPServerV6((host, port), MockDuoHandler)
 
     httpd.socket = ssl.wrap_socket(httpd.socket, certfile=cafile, server_side=True)
 
